@@ -1,0 +1,18 @@
+/*CHAT*/
+#chat {
+  text-align: center;
+  display: inline-block;
+  width: 60%;
+  vertical-align: top
+}
+
+/*COURTS*/
+.court {
+  display: inline-block;
+  width: 15%;
+}
+
+
+#court2 {
+  float: right;
+}
