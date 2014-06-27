@@ -1,10 +1,16 @@
+var jade = require('jade');
+var PORT = 8080;
+
+var redis = require('redis');
+var db = redis.createClient();
+var pub = redis.createClient();
+var sub = redis.createClient();
+
 var http = require('http');
 var express = require('express');
 var app = express();
-var jade = require('jade');
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
-var PORT = 8080;
 server.listen(PORT, function(){
   console.log("Now connected on localhost:" + PORT)
 });
@@ -17,32 +23,26 @@ app.get('/', function(req, res){
  res.render('home');
 });
 
-usernames = {}
+io.sockets.on('connection', function(client){
 
-var usernamesIsEmpty = function(usernames){
-  (Object.getOwnPropertyNames(usernames).length === 0)
-}
+  sub.subscribe("chatting");
+  sub.on("message", function (channel, message) {
+        console.log("message received on server from publish");
+        client.send(message);
+    });
 
-io.sockets.on('connection', function(socket){
+  client.on("sendMessage", function(msg) {
+            pub.publish("chatting",msg);
+        });
 
-  socket.on('setUsername', function(name){
-    if (usernamesIsEmpty){
-      usernames['user1'] = name;
-    }
-    else if (usernames.length == 2) {
+  client.on("setUsername", function(user){
+            pub.publish("chatting","A new user in connected:" + user);
+            db.sadd("onlineUsers",user);
+        }
+    );
 
-    }
-    else {
-      usernames['user2'] = name;
-    }
-  });
-
-  socket.on('message', function (msg,username) {
-      socket.broadcast.emit('message', msg);
-      console.log(username + " sent this : " + msg);
-    })
-  });
-
-
-
-
+  client.on('disconnect', function () {
+        sub.quit();
+        pub.publish("chatting","User is disconnected :" + client.id);
+    });
+});

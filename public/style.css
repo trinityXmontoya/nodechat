@@ -1,18 +1,14 @@
 /*CHAT*/
 #chat {
+  padding: 20px;
+  margin: 0 auto;
   text-align: center;
   display: inline-block;
-  width: 60%;
-  vertical-align: top
-}
-
-/*COURTS*/
-.court {
+  width: 200px;
+  vertical-align: top;
+  background-color: gray;
+  color: white;
+  opacity: .9;
   display: inline-block;
-  width: 15%;
 }
 
-
-#court2 {
-  float: right;
-}
