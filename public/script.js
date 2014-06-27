@@ -19,13 +19,11 @@ var setUsername = function(){
 
 var showCurrentUsers = function(){
     $('#list_of_users').empty();
-
-    $.getJSON('getusers.js', function(data){
-        for (var i = 0; i < data.length; i++){
-            $('list_of_users').append("<li>"+data[i]+"</li>")
+    $.getJSON('getUsers', function(data){
+        for (var i in data){
+             $('#list_of_users').append("<li> User: "+data[i]+"</li>")
         }
-    })
-
+    });
 }
 
 var sendMessage = function(){

@@ -1,28 +1,45 @@
-var jade = require('jade');
-var PORT = 8080;
-
+// REDIS SETUP
 var redis = require('redis');
 var db = redis.createClient();
 var pub = redis.createClient();
 var sub = redis.createClient();
 
+
+// NODE & SOCKET SETUP
 var http = require('http');
 var express = require('express');
 var app = express();
+var PORT = 8080;
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 server.listen(PORT, function(){
   console.log("Now connected on localhost:" + PORT)
 });
 
+// ROUTES SETUP
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
 app.set("view options", {layout: false});
 app.use(express.static(__dirname + '/public'));
 app.get('/', function(req, res){
- res.render('home');
+ res.render('home.jade');
 });
+app.get('/getUsers', function(req,res, next){
+  getOnlineUsers(function(err,onlineUsers){
+    if (err){
+      return next(err);
+    }
+   res.send(onlineUsers)
+ });
+ });
 
+// REDIS DATA
+var getOnlineUsers = function(cb){
+  return db.smembers("onlineUsers",cb)
+}
+
+
+
+// SOCKET AND REDIS PUB/SUB CONFIG
 io.sockets.on('connection', function(client){
 
   sub.subscribe("chatting");
