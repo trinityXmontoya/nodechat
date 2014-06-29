@@ -1,5 +1,5 @@
 $(document).ready( function(){
-    $client = io.connect();
+    client = io.connect();
     initialize();
 });
 
@@ -9,7 +9,7 @@ var setUsername = function(){
     if (username)
     {
         var user = username;
-        $client.emit('setUsername', username);
+        client.emit('setUsername', username);
         $('#chatControls').show();
         $('#usernameInput').hide();
         $('#usernameSet').hide();
@@ -32,7 +32,7 @@ var sendMessage = function(){
     if (msg)
     {
         var data = {msg: msg, user: username}
-        $client.emit('message', data);
+        client.emit('message', data);
         addMessage(data);
         $('#messageInput').val('');
         // populate(username,msg);
@@ -55,3 +55,4 @@ var initialize = function(){
     $("#submit").on('click',sendMessage);
     showCurrentUsers();
 }
+

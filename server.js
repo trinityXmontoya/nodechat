@@ -20,23 +20,25 @@ server.listen(PORT, function(){
 app.set('views', __dirname + '/views');
 app.set("view options", {layout: false});
 app.use(express.static(__dirname + '/public'));
+
 app.get('/', function(req, res){
  res.render('home.jade');
 });
 app.get('/getUsers', function(req,res, next){
-  getOnlineUsers(function(err,onlineUsers){
-    if (err){
-      return next(err);
-    }
-   res.send(onlineUsers)
- });
- });
+  getOnlineUsers(function (err, response){
+    if (err) throw err;
+    res.send(response)
+  })
+});
 
 // REDIS DATA
 var getOnlineUsers = function(cb){
-  return db.smembers("onlineUsers",cb)
+  return db.smembers("onlineUsers", cb)
 }
 
+var findUser = function(client, cb){
+  return db.get(client.id, cb);
+}
 
 
 // SOCKET AND REDIS PUB/SUB CONFIG
@@ -54,12 +56,18 @@ io.sockets.on('connection', function(client){
 
   client.on("setUsername", function(user){
             pub.publish("chatting","A new user in connected:" + user);
+            db.set(client.id,user)
             db.sadd("onlineUsers",user);
         }
     );
 
   client.on('disconnect', function () {
         sub.quit();
-        pub.publish("chatting","User is disconnected :" + client.id);
+        var username = findUser(client, function (err,response){
+          if (err) throw err;
+          db.srem('onlineUsers', response);
+        });
+        pub.publish("chatting","User is disconnected :" + username);
     });
+
 });
