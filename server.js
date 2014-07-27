@@ -50,21 +50,21 @@ var getHistory = function(cb){
 // SOCKET CONFIG
 io.on('connection', function (client) {
 
-  io.emit('news', "New user has joined.");
+  io.emit("newMsg", "New user has joined.");
 
   var _io = io;
   client.on("sendMessage", function(msg){
           db.sadd("chatHistory", msg);
           _io.emit("newMsg", msg);
-        });
+  });
 
   client.on("setUsername", function(user){
           db.set(client.id,user);
           db.sadd("onlineUsers",user);
           _io.emit("usernameSet", user);
-        });
+  });
 
-  client.on('disconnect', function(){
+  client.on("disconnect", function(){
       findUser(client, function (err,response){
         if (err) throw err;
         _io.emit("userDisconnect", response);
