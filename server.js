@@ -1,9 +1,6 @@
 // REDIS SETUP
 var redis = require('redis');
 var db = redis.createClient();
-var pub = redis.createClient();
-var sub = redis.createClient();
-
 
 // NODE & SOCKET SETUP
 var http = require('http');
@@ -24,15 +21,21 @@ app.use(express.static(__dirname + '/public'));
 app.get('/', function(req, res){
  res.render('home.jade');
 });
-app.get('/getUsers', function(req,res, next){
-  getOnlineUsers(function (err, response){
+app.get('/getUsers', function(req,res){
+  getUsers(function (err, response){
     if (err) throw err;
     res.send(response)
   })
 });
+app.get('/getHistory', function(req,res){
+  getHistory(function(err,response){
+    if (err) throw err;
+    res.send(response);
+  })
+})
 
-// REDIS DATA
-var getOnlineUsers = function(cb){
+// REDIS API DATA
+var getUsers = function(cb){
   return db.smembers("onlineUsers", cb)
 }
 
@@ -40,34 +43,35 @@ var findUser = function(client, cb){
   return db.get(client.id, cb);
 }
 
+var getHistory = function(cb){
+  return db.smembers('chatHistory', cb);
+}
 
-// SOCKET AND REDIS PUB/SUB CONFIG
-io.sockets.on('connection', function(client){
+// SOCKET CONFIG
+io.on('connection', function (client) {
 
-  sub.subscribe("chatting");
-  sub.on("message", function (channel, message) {
-        console.log("message received on server from publish");
-        client.send(message);
-    });
+  io.emit('news', "New user has joined.");
 
-  client.on("sendMessage", function(msg) {
-            pub.publish("chatting",msg);
+  var _io = io;
+  client.on("sendMessage", function(msg){
+          db.sadd("chatHistory", msg);
+          _io.emit("newMsg", msg);
         });
 
   client.on("setUsername", function(user){
-            pub.publish("chatting","A new user in connected:" + user);
-            db.set(client.id,user)
-            db.sadd("onlineUsers",user);
-        }
-    );
-
-  client.on('disconnect', function () {
-        sub.quit();
-        var username = findUser(client, function (err,response){
-          if (err) throw err;
-          db.srem('onlineUsers', response);
+          db.set(client.id,user);
+          db.sadd("onlineUsers",user);
+          _io.emit("usernameSet", user);
         });
-        pub.publish("chatting","User is disconnected :" + username);
-    });
+
+  client.on('disconnect', function(){
+      findUser(client, function (err,response){
+        if (err) throw err;
+        _io.emit("userDisconnect", response);
+        db.srem('onlineUsers', response);
+      });
+  });
+
 
 });
+
