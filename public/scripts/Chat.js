@@ -4,8 +4,8 @@ var Chat = {
 
   init: function(){
     $("#messageInput").hide();
-    $("#usernameInput").on('keypress', this.setUsername);
-    $("#messageInput").on('keypress', this.sendMessage);
+    $("#usernameInput").on('keypress', $.proxy(this.setUsername,this));
+    $("#messageInput").on('keypress', $.proxy(this.sendMessage,this));
     this.clientSetup();
     this.showCurrentUsers();
     this.loadHistory();
@@ -56,11 +56,12 @@ var Chat = {
   },
 
   setUsername: function(e){
+    var _this = this;
     if (e.keyCode == 13 || e.which == 13) {
       var username = $("#usernameInput").val();
       if (username) {
           var user = username;
-          Chat.client.emit('setUsername', username);
+          _this.client.emit('setUsername', username);
           $('#messageInput').show();
           $('#usernameInput').hide();
       }
@@ -68,13 +69,14 @@ var Chat = {
   },
 
   sendMessage: function(e){
+    var _this = this;
    if (e.keyCode == 13 || e.which == 13) {
       var msg = $('#messageInput').val();
       var username = $("#usernameInput").val();
       if (msg) {
         var log = username + ": " + msg
-        Chat.client.emit('sendMessage', log);
-        Chat.client.emit('message', log)
+        _this.client.emit('sendMessage', log);
+        _this.client.emit('message', log)
         $('#messageInput').val('');
         // populate(username,msg);
       }
