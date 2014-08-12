@@ -1,9 +1,5 @@
-// REDIS SETUP
-var redis = require('redis');
-var db = redis.createClient();
-
 // NODE & SOCKET SETUP
-var http = require('http');
+var http = require('http')
 var express = require('express');
 var app = express();
 var PORT = 8080;
@@ -12,6 +8,10 @@ var io = require('socket.io').listen(server);
 server.listen(PORT, function(){
   console.log("Now connected on localhost:" + PORT)
 });
+
+// REDIS SETUP
+var redis = require('redis');
+var db = redis.createClient();
 
 // ROUTES SETUP
 app.set('views', __dirname + '/views');
@@ -44,7 +44,7 @@ var findUser = function(client, cb){
 }
 
 var getHistory = function(cb){
-  return db.smembers('chatHistory', cb);
+  return db.lrange('chatHistory', 0, -1, cb);
 }
 
 // SOCKET CONFIG
@@ -54,7 +54,7 @@ io.on('connection', function (client) {
 
   var _io = io;
   client.on("sendMessage", function(msg){
-          db.sadd("chatHistory", msg);
+          db.lpush("chatHistory", msg);
           _io.emit("newMsg", msg);
   });
 
@@ -74,4 +74,3 @@ io.on('connection', function (client) {
 
 
 });
-

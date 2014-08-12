@@ -15,29 +15,30 @@ var Chat = {
     var _this = this;
 
     this.client.on('news', function (data) {
-        $('body').prepend('<h3>'+data+'</h3>');
+      $('body').prepend('<h3>'+data+'</h3>');
     });
 
     this.client.on("newMsg", function(msg){
-        _this.addMessage(msg);
+      _this.addMessage(msg);
     });
 
     this.client.on("usernameSet", function(username){
-        _this.addUser(username);
+      _this.addUser(username);
     });
 
     this.client.on('userDisconnect', function(username){
-        _this.addMessage(username + " has left the room.");
-        $('.user[data-username="'+ username +'"]').remove();
+      _this.addMessage(username + " has left the room.");
+      $('.user[data-username="'+ username +'"]').remove();
     });
   },
+
   showCurrentUsers: function(){
     var _this = this;
     $('#list-of-users').empty();
     $.getJSON('getUsers', function(users){
-        for (var i in users) {
-          _this.addUser(users[i]);
-        }
+      for (var i in users) {
+        _this.addUser(users[i]);
+      }
     });
   },
 
@@ -45,9 +46,9 @@ var Chat = {
     $('#chatEntries').empty();
     var _this = this;
     $.getJSON('getHistory', function(history){
-        for (var i in history){
-            _this.addMessage(history[i]);
-        }
+      for (var i in history){
+          _this.addMessage(history[i]);
+      }
     });
   },
 
@@ -60,17 +61,17 @@ var Chat = {
     if (e.keyCode == 13 || e.which == 13) {
       var username = $("#usernameInput").val();
       if (username) {
-          var user = username;
-          _this.client.emit('setUsername', username);
-          $('#messageInput').show();
-          $('#usernameInput').hide();
+        var user = username;
+        _this.client.emit('setUsername', username);
+        $('#messageInput').show();
+        $('#usernameInput').hide();
       }
     }
   },
 
   sendMessage: function(e){
     var _this = this;
-   if (e.keyCode == 13 || e.which == 13) {
+    if (e.keyCode == 13 || e.which == 13) {
       var msg = $('#messageInput').val();
       var username = $("#usernameInput").val();
       if (msg) {
@@ -84,14 +85,8 @@ var Chat = {
   },
 
   addMessage: function(msg) {
+    // Streamgraph.transition([100,1],[32,20],43);
      $("#chatEntries").prepend('<div class="message"><p>' +  msg + '</p></div>');
   }
 
-// var populate = function(username,msg) {
-//     var data ;
-// }
-
 };
-
-
-
