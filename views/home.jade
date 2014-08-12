@@ -1,23 +1,7 @@
-doctype html
-html
-  head
-    title Chat
-    script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
-    script(src="/socket.io/socket.io.js")
-    script(src="scripts/Chat.js")
-    script(src="scripts/main.js")
-    script(src="http://d3js.org/d3.v3.min.js")
-    script(src="scripts/streamgraph.js")
-    link(type='text/css', rel='stylesheet', href='styles/style.css')
-    link(type='text/css', rel='stylesheet', href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400,700')
+extends layout
+block body
 
-  body
-    div.container
-      header
-        h1 Chattack
-      div#list-of-users
-      div#chat
-        input(type='text', placeholder='username')#usernameInput
-        input(type='text', placeholder="gimme all your bacon")#messageInput
-        div#chatEntries
-      svg(height='400', width='800',id='bg')
+  h1 Welcome
+  div
+    p Password-protected chat that disappears after the last user leaves...
+    a(href = '/chat') Create a private chat

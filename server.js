@@ -1,5 +1,6 @@
 // NODE & SOCKET SETUP
-var http = require('http')
+var http = require('http');
+var crypto = require('crypto');
 var express = require('express');
 var app = express();
 var PORT = 8080;
@@ -15,11 +16,16 @@ var db = redis.createClient();
 
 // ROUTES SETUP
 app.set('views', __dirname + '/views');
-app.set("view options", {layout: false});
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){
  res.render('home.jade');
+});
+app.get('/chat', function(req,res){
+  res.redirect('/chat/' + generateToken());
+});
+app.get('/chat/:token', function(req,res){
+  res.render('chat.jade')
 });
 app.get('/getUsers', function(req,res){
   getUsers(function (err, response){
@@ -34,6 +40,7 @@ app.get('/getHistory', function(req,res){
   })
 })
 
+
 // REDIS API DATA
 var getUsers = function(cb){
   return db.smembers("onlineUsers", cb)
@@ -45,6 +52,18 @@ var findUser = function(client, cb){
 
 var getHistory = function(cb){
   return db.lrange('chatHistory', 0, -1, cb);
+}
+
+var tokenExists = function(token){
+  return db.exists('chatroom:'+ token)
+}
+
+// TOKEN GENERATION
+var generateToken = function(){
+  crypto.randomBytes(48, function(ex, buf) {
+    var token = buf.toString('hex');
+    tokenExists(token)==true ? token : generateToken();
+  });
 }
 
 // SOCKET CONFIG
@@ -59,7 +78,7 @@ io.on('connection', function (client) {
   });
 
   client.on("setUsername", function(user){
-          db.set(client.id,user);
+          // db.hset("",);
           db.sadd("onlineUsers",user);
           _io.emit("usernameSet", user);
   });
