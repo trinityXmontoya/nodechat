@@ -55,16 +55,31 @@ var getHistory = function(cb){
 }
 
 var tokenExists = function(token){
-  return db.exists('chatroom:'+ token)
+  var cb = function (err, res) {
+        console.log(res)
+  };
+  return db.exists("chatroom:"+token,cb);
 }
 
 // TOKEN GENERATION
 var generateToken = function(){
-  crypto.randomBytes(48, function(ex, buf) {
-    var token = buf.toString('hex');
-    tokenExists(token)==true ? token : generateToken();
-  });
+  try {
+    var token = urlSafeBase64(crypto.randomBytes(23));
+    console.log('Have %d bytes of random data: %s', token.length, token);
+  } catch (ex) {
+    console.log(ex)
+  }
+  return token;
+  // // tokenExists(token)
 }
+
+var urlSafeBase64 = function(buf){
+  return buf.toString('base64')
+            .replace(/\+/g, '-') // Convert '+' to '-'
+            .replace(/\//g, '_') // Convert '/' to '_'
+            .replace(/=+$/, ''); // Remove '=', '+', and '$'
+};
+
 
 // SOCKET CONFIG
 io.on('connection', function (client) {
